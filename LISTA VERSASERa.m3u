@@ -3,3 +3,5 @@
 https://live.streamhch.com/live/streams/hch1.m3u8
 #EXTINF:-1 tvg-logo="https://static.wikia.nocookie.net/telepedia-es/images/9/99/ESPN_logo.png" group-title="DEPORTES",ESPN
 https://deportes.ksdjugfsddeports.com:9092/MTkwLjkyLjkuMTAx/13_.m3u8?token=_rRuxMyXTNrZpWQ2WRvB9w&expires=1775720956
+#EXTINF:-1 tvg-logo="https://images.seeklogo.com/logo-png/4/1/espn-2-logo-png_seeklogo-49202.png" group-title="DEPORTES",ESPN 2
+https://deportes.ksdjugfsddeports.com:9092/MTkwLjkyLjkuMTAx/14_.m3u8?token=iWSJNO-bVUSYRiLl5pXuIw&expires=1775722124
