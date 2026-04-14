@@ -1,0 +1,34 @@
+name: Actualizar Links IPTV
+
+on:
+  schedule:
+    # Esto hace que corra cada 12 horas (puedes ajustarlo)
+    - cron: '0 */12 * * *'
+  workflow_dispatch: # Permite que tú lo actives manualmente cuando quieras
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Instalar librerías (si usas requests o bs4)
+        run: |
+          pip install requests beautifulsoup4
+
+      - name: Ejecutar script de actualización
+        run: python update_iptv.py
+
+      - name: Guardar cambios en GitHub
+        run: |
+          git config --global user.name "IPTV Bot"
+          git config --global user.email "bot@github.com"
+          git add WALTERTV.m3u
+          git commit -m "Links actualizados automáticamente" || exit 0
+          git push
