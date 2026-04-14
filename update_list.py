@@ -2,28 +2,28 @@ import requests
 import re
 
 def obtener_enlaces():
-    # Intentamos entrar a una sección más específica de deportes si existe
-    url_fuente = "https://www.cablevisionhd.com"
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-        'Referer': 'https://www.google.com/'
-    }
+    # Usaremos una fuente que recopila enlaces de diversas webs de deportes
+    # Esta es una fuente de ejemplo que suele ser más amigable con scripts
+    urls_fuentes = [
+        "https://raw.githubusercontent.com/m3u4u/m3u4u/main/deportes.m3u", # Ejemplo de lista externa
+        "https://pastebin.com/raw/L9u6vD7S" # Ejemplo de enlaces temporales
+    ]
     
-    try:
-        response = requests.get(url_fuente, headers=headers, timeout=20)
-        # Buscamos enlaces que tengan .m3u8 o patrones de servidores comunes de IPTV
-        enlaces = re.findall(r'(https?://[^\s"\'<>]+(?:\.m3u8|\.ts)[^\s"\'<>]*)', response.text)
-        
-        # Si no encuentra nada, buscamos tokens o IDs de canales (esto es más avanzado)
-        if not enlaces:
-            print("No se detectaron enlaces directos, buscando fuentes alternativas...")
-            # Aquí el script intenta buscar dentro de iframes o scripts
-            enlaces = re.findall(r'source:\s*"([^"]+)"', response.text)
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    enlaces_encontrados = []
+
+    for url in urls_fuentes:
+        try:
+            print(f"Probando fuente: {url}")
+            r = requests.get(url, headers=headers, timeout=10)
+            if r.status_status == 200:
+                # Busca cualquier cosa que parezca un link de video .m3u8
+                links = re.findall(r'(https?://[^\s"\'<>]+(?:\.m3u8|\.ts)[^\s"\'<>]*)', r.text)
+                enlaces_encontrados.extend(links)
+        except:
+            continue
             
-        return list(set(enlaces))
-    except Exception as e:
-        print(f"Error: {e}")
-        return []
+    return list(set(enlaces_encontrados))
 
 def actualizar_m3u():
     enlaces_nuevos = obtener_enlaces()
@@ -31,30 +31,19 @@ def actualizar_m3u():
     
     try:
         with open(nombre_archivo, "r", encoding="utf-8") as f:
-            lineas_actuales = f.readlines()
+            lineas_anteriores = f.readlines()
     except:
-        lineas_actuales = ["#EXTM3U\n"]
+        lineas_anteriores = ["#EXTM3U\n"]
 
-    # Filtramos para quitar links que ya no sirven de ESPN o anteriores intentos
-    nuevas_lineas = []
-    skip = False
-    for linea in lineas_actuales:
-        if "#EXTINF" in linea and ("ESPN" in linea.upper() or "ACTUALIZADO" in linea.upper()):
-            skip = True
-            continue
-        if skip:
-            skip = False
-            continue
-        nuevas_lineas.append(linea)
+    # Limpiamos los canales "Auto-Actualizados" viejos para no llenar la lista de basura
+    nuevas_lineas = [l for l in lineas_anteriores if "AUTO-TV" not in l and "http" not in l or "github" in l]
 
-    # Si encontramos algo en la web, lo metemos con el formato correcto
     if enlaces_nuevos:
-        for i, link in enumerate(enlaces_nuevos):
-            if i < 15: # Limitamos a los primeros 15 para no saturar
-                nuevas_lineas.append(f'#EXTINF:-1 tvg-logo="" group-title="DEPORTES", CANAL NUEVO {i+1}\n{link}\n')
-        print(f"Se agregaron {len(enlaces_nuevos)} enlaces nuevos.")
+        for i, link in enumerate(enlaces_nuevos[:20]): # Solo los primeros 20 para probar
+            nuevas_lineas.append(f'#EXTINF:-1 group-title="DEPORTES AUTOMATICOS", AUTO-TV {i+1}\n{link}\n')
+        print(f"¡Éxito! Se agregaron {len(enlaces_nuevos[:20])} canales.")
     else:
-        print("La web no entregó enlaces compatibles hoy.")
+        print("No se encontraron enlaces en las fuentes alternativas.")
 
     with open(nombre_archivo, "w", encoding="utf-8") as f:
         f.writelines(nuevas_lineas)
