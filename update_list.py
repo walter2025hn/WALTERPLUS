@@ -1,58 +1,58 @@
 import requests
+import re
 
 def obtener_peliculas_y_series():
-    # Fuentes de repositorios que recopilan peliculas y series abiertas
+    # Estas fuentes contienen listas de películas y series directas (VOD)
     fuentes = [
-        "https://iptv-org.github.io/iptv/categories/movies.m3u",
-        "https://iptv-org.github.io/iptv/categories/animation.m3u", # Para series animadas/anime
-        "https://raw.githubusercontent.com/LuchitoIPTV/Series/main/Series.m3u"
+        "https://raw.githubusercontent.com/LuchitoIPTV/Series/main/Series.m3u",
+        "https://raw.githubusercontent.com/Kodi-Libre/Kodi-Libre/master/Peliculas.m3u",
+        "https://raw.githubusercontent.com/tomasm93/m3u8/master/Peliculas.m3u"
     ]
     
     headers = {'User-Agent': 'Mozilla/5.0'}
-    contenido_encontrado = []
+    contenido_total = []
 
     for url in fuentes:
         try:
-            print(f"Buscando cine y series en: {url}")
+            print(f"Buscando contenido en: {url}")
             r = requests.get(url, headers=headers, timeout=20)
             if r.status_code == 200:
-                lineas = r.text.splitlines()
-                for i in range(len(lineas)):
-                    if "#EXTINF" in lineas[i]:
-                        # Guardamos la info y el link (la siguiente linea)
-                        contenido_encontrado.append(lineas[i])
-                        contenido_encontrado.append(lineas[i+1])
+                # Extraemos la info y el link directo al archivo de video (.mp4, .mkv, .m3u8 de video)
+                enlaces = re.findall(r'(#EXTINF:.*,.*\nhttp.*)', r.text)
+                contenido_total.extend(enlaces)
         except:
             continue
-    return contenido_encontrado
+    return contenido_total
 
 def actualizar_m3u():
-    vode_data = obtener_peliculas_y_series()
+    items_vod = obtener_peliculas_y_series()
     nombre_archivo = "LISTA VERSASERa.m3u"
     
-    # Leemos lo que ya tienes (tus canales de TV)
+    # 1. Leemos tu lista actual para no borrar tus canales deportivos
     try:
         with open(nombre_archivo, "r", encoding="utf-8") as f:
-            contenido_actual = f.read()
+            lineas_actuales = f.readlines()
     except:
-        contenido_actual = "#EXTM3U\n"
+        lineas_actuales = ["#EXTM3U\n"]
 
-    # Filtramos para no repetir peliculas que ya esten
-    nuevos_items = []
-    for i in range(0, len(vode_data), 2):
-        link = vode_data[i+1]
-        if link not in contenido_actual:
-            # Personalizamos el grupo para que tu app de IPTV los organice bien
-            info = vode_data[i].replace('group-title="', 'group-title="CINE/SERIES - ')
-            nuevos_items.append(info)
-            nuevos_items.append(link)
+    # 2. Quitamos contenido VOD viejo para no tener enlaces caídos
+    final_lineas = []
+    for linea in lineas_actuales:
+        if "PELICULA" not in linea.upper() and "SERIE" not in linea.upper():
+            final_lineas.append(linea)
 
-    if nuevos_items:
-        with open(nombre_archivo, "a", encoding="utf-8") as f:
-            f.write("\n" + "\n".join(nuevos_items))
-        print(f"¡Éxito! Se agregaron {len(nuevos_items)//2} nuevas películas y series.")
+    # 3. Agregamos las nuevas películas y series
+    if items_vod:
+        for item in items_vod[:100]: # Traemos las primeras 100 para probar
+            # Aseguramos que tengan la etiqueta de grupo para que tu app las separe bien
+            info_corregida = item.replace("#EXTINF:-1", '#EXTINF:-1 group-title="PELICULAS Y SERIES"')
+            final_lineas.append(info_corregida + "\n")
+        
+        with open(nombre_archivo, "w", encoding="utf-8") as f:
+            f.writelines(final_lineas)
+        print(f"¡Listo! Se agregaron {len(items_vod[:100])} películas y series a la carta.")
     else:
-        print("No se encontró contenido nuevo para agregar.")
+        print("No se encontró contenido VOD en las fuentes.")
 
 if __name__ == "__main__":
     actualizar_m3u()
