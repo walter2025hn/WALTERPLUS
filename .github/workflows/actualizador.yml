@@ -1,37 +1,59 @@
-name: Actualizador Automático de Lista
+import requests
+import urllib3
 
-on:
-  schedule:
-    - cron: '0 */6 * * *' # Se ejecutará automáticamente cada 6 horas
-  workflow_dispatch:      # Permite que tú lo actives manualmente cuando quieras
+# Desactivar advertencias de certificados (por el error SSL que te salía)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+# CONFIGURACIÓN
+URL_FUENTE = "http://memondo.sviportdaey.top:8080/get.php?username=Barea250912&password=HUGRGY3&type=m3u_plus"
+ARCHIVO_FINAL = "WALTERTV_LLENO.m3u"
+
+# Encabezados para parecer un reproductor real
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (SmartHub; SmartTV; 2013; Linux/SmartTV) AppleWebKit/537.11 (KHTML, like Gecko) TV Safari/537.11'
+}
+
+def descargar_y_limpiar():
+    print(f"--- Iniciando extracción desde fuente externa ---")
     
-    # Estos permisos son vitales para que no salga la X roja
-    permissions:
-      contents: write
+    try:
+        # Realizar la petición (sin verificar SSL y con headers de TV)
+        response = requests.get(URL_FUENTE, headers=HEADERS, verify=False, timeout=30)
+        
+        if response.status_code == 200:
+            # Dividir el contenido por líneas y limpiar espacios
+            lineas = response.text.splitlines()
+            
+            canales_encontrados = []
+            
+            # Recorrer las líneas buscando la estructura de IPTV
+            # i = etiqueta (#EXTINF), i+1 = link (http://...)
+            for i in range(len(lineas)):
+                if lineas[i].startswith("#EXTINF"):
+                    # Verificamos que exista una línea siguiente y que sea un link
+                    if i + 1 < len(lineas) and lineas[i+1].startswith("http"):
+                        canales_encontrados.append(lineas[i])   # Info del canal
+                        canales_encontrados.append(lineas[i+1]) # URL del streaming
+            
+            # Guardar el resultado
+            with open(ARCHIVO_FINAL, "w", encoding="utf-8") as f:
+                f.write("#EXTM3U\n") # Encabezado obligatorio
+                for linea in canales_encontrados:
+                    f.write(linea + "\n")
+            
+            total = len(canales_encontrados) // 2
+            print(f"--- ¡ÉXITO! ---")
+            print(f"Se extrajeron {total} canales correctamente.")
+            print(f"Archivo guardado como: {ARCHIVO_FINAL}")
+            
+        else:
+            print(f"Error: El servidor respondió con código {response.status_code}")
+            if response.status_code == 401:
+                print("Nota: El usuario o contraseña parecen haber expirado.")
 
-    steps:
-      - name: 1. Descargar mi repositorio
-        uses: actions/checkout@v3
+    except Exception as e:
+        print(f"Ocurrió un error técnico: {e}")
 
-      - name: 2. Preparar Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
+if __name__ == "__main__":
+    descargar_y_limpiar()
 
-      - name: 3. Instalar librerías necesarias
-        run: pip install requests
-
-      - name: 4. Ejecutar el script actualizador
-        run: python update_list.py
-
-      - name: 5. Guardar y subir cambios a mi GitHub
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add "LISTA VERSASERa.m3u"
-          git commit -m "Enlaces actualizados automáticamente" || exit 0
-          git push
