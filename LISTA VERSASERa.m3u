@@ -1,4 +1,4 @@
 #EXTM3U
 
-#EXTINF:-1, ESPN 2
+#EXTINF:-1 tvg-logo="https://raw.githubusercontent.com/walter2025hn/WALTERPLUS/refs/heads/main/1775708656008.jpg" group-title="DEPORTES HD", ESPN 2
 https://deportes.ksdjugfsddeports.com:9092/MTkwLjkyLjkuMTAx/14_.m3u8?token=rkDgD_FkGHKG75lxWhKljQ&expires=1778486268
