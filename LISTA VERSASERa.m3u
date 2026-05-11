@@ -1,13 +1,13 @@
 #EXTM3U
 
-# --- TV EN VIVO (Se queda igual) ---
+# --- TV EN VIVO ---
 #EXTINF:-1 tvg-id="CNN" group-title="TV EN VIVO",CNN International
 https://ejemplo.com/stream/cnn.m3u8
 
-# --- SECCIÓN PELÍCULAS (Añade etiquetas de video) ---
-#EXTINF:-1 tvg-logo="https://enlace.com/poster.jpg" group-title="PELÍCULAS" movie-id="1" genre="Accion",El Padrino (1972)
+# --- PELÍCULAS ---
+#EXTINF:-1 group-title="PELÍCULAS" content-type="video/mp4" movie-id="1",El Padrino (1972)
 https://ejemplo.com/vod/elpadrino.mp4
 
-# --- SECCIÓN SERIES (Añade etiquetas de serie) ---
-#EXTINF:-1 group-title="SERIES" series-id="TLOU1" tvg-logo="https://enlace.com/logo.jpg",The Last of Us S01E01
+# --- SERIES ---
+#EXTINF:-1 group-title="SERIES" content-type="video/mp4" series-id="TLOU1",The Last of Us S01E01
 https://ejemplo.com/series/tlou_01.mp4
