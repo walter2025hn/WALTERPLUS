@@ -1,9 +1,8 @@
 #EXTM3U
 
 # --- TV EN VIVO ---
-#EXTINF:-1 tvg-id="CNN" group-title="TV EN VIVO",CNN International
-https://ejemplo.com/stream/cnn.m3u8
-
+#EXTINF:-1 tvg-logo="" tvg-id="HCH" group-title="TV HONDURAS",HCH
+https://live.streamhch.com/live/stream/hch1.m3u8
 # --- PELÍCULAS ---
 #EXTINF:-1 tvg-logo="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSxQpyW3aiFvwYPqIF7zm12ZaZIgrydD-wAI3yUIIkVQA&s=10" group-title="PELÍCULAS" content-type="video/mp4" movie-id="1",SPIDER-MAN
 https://dl.dropboxusercontent.com/scl/fi/oqqeo1texj29rllqrh7o7/Spider-Man:A_trav%C3%A9s_del_Spider-Verso%F0%9F%94%B9Fireflix.mp4?dl=0&rlkey=ll9xlhnvfddfi9rnfphhxn192
